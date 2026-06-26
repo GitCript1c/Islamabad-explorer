@@ -1,0 +1,2193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Explore scenic viewpoints in Islamabad with interactive maps and route planning">
+    <title>Islamabad Viewpoints Explorer</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: 210 70% 45%;
+            --primary-hover: 210 70% 38%;
+            --primary-light: 210 60% 60%;
+            --primary-glow: 210 80% 55%;
+            --accent: 38 92% 50%;
+            --accent-hover: 38 92% 45%;
+            --success: 142 71% 45%;
+            --warning: 38 92% 50%;
+            --error: 0 84% 60%;
+            --info: 199 89% 48%;
+            --background: 210 20% 98%;
+            --surface: 0 0% 100%;
+            --surface-elevated: 0 0% 100%;
+            --border: 210 15% 90%;
+            --border-light: 210 15% 95%;
+            --text-primary: 210 25% 15%;
+            --text-secondary: 210 15% 40%;
+            --text-muted: 210 10% 55%;
+            --text-inverse: 0 0% 100%;
+            --shadow-sm: 0 1px 2px hsl(210 25% 15% / 0.05);
+            --shadow-md: 0 4px 12px hsl(210 25% 15% / 0.08);
+            --shadow-lg: 0 8px 30px hsl(210 25% 15% / 0.12);
+            --shadow-xl: 0 20px 50px hsl(210 25% 15% / 0.15);
+            --shadow-glow: 0 0 40px hsl(210 80% 55% / 0.2);
+            --gradient-primary: linear-gradient(135deg, hsl(210 70% 50%), hsl(210 75% 40%));
+            --gradient-surface: linear-gradient(180deg, hsl(210 30% 98%), hsl(210 20% 95%));
+            --gradient-header: linear-gradient(180deg, hsl(0 0% 100% / 0.95), hsl(0 0% 100% / 0.9));
+            --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 20% 99%));
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-2xl: 3rem;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --radius-full: 9999px;
+            --transition-fast: 0.15s ease;
+            --transition-base: 0.25s ease;
+            --transition-slow: 0.4s ease;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --z-base: 1;
+            --z-sticky: 100;
+            --z-dropdown: 200;
+            --z-modal: 300;
+            --z-toast: 400;
+        }
+
+        .dark {
+            --background: 215 25% 8%;
+            --surface: 215 20% 12%;
+            --surface-elevated: 215 18% 15%;
+            --border: 215 15% 20%;
+            --border-light: 215 15% 18%;
+            --text-primary: 210 20% 95%;
+            --text-secondary: 210 12% 70%;
+            --text-muted: 210 10% 50%;
+            --shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.2);
+            --shadow-md: 0 4px 12px hsl(0 0% 0% / 0.3);
+            --shadow-lg: 0 8px 30px hsl(0 0% 0% / 0.4);
+            --shadow-xl: 0 20px 50px hsl(0 0% 0% / 0.5);
+            --gradient-header: linear-gradient(180deg, hsl(215 20% 12% / 0.95), hsl(215 20% 12% / 0.9));
+            --gradient-surface: linear-gradient(180deg, hsl(215 20% 10%), hsl(215 25% 8%));
+            --gradient-card: linear-gradient(180deg, hsl(215 18% 15%), hsl(215 20% 12%));
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: var(--font-body);
+            font-size: 16px;
+            line-height: 1.6;
+            color: hsl(var(--text-primary));
+            background: var(--gradient-surface);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: var(--font-display);
+            font-weight: 600;
+            line-height: 1.2;
+            color: hsl(var(--text-primary));
+        }
+
+        p {
+            color: hsl(var(--text-secondary));
+        }
+
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: var(--z-sticky);
+            background: var(--gradient-header);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid hsl(var(--border-light));
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: var(--space-md) var(--space-lg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-lg);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-md), var(--shadow-glow);
+        }
+
+        .logo-icon i {
+            font-size: 1.5rem;
+            color: hsl(var(--text-inverse));
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-title {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: hsl(var(--text-primary));
+            line-height: 1.1;
+        }
+
+        .logo-subtitle {
+            font-size: 0.75rem;
+            color: hsl(var(--text-muted));
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .nav {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: var(--radius-full);
+            font-family: var(--font-body);
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: hsl(var(--text-secondary));
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+
+        .nav-btn:hover {
+            color: hsl(var(--text-primary));
+            background: hsl(var(--primary) / 0.08);
+        }
+
+        .nav-btn.active {
+            color: hsl(var(--primary));
+            background: hsl(var(--primary) / 0.12);
+            border-color: hsl(var(--primary) / 0.2);
+        }
+
+        .nav-btn i {
+            font-size: 1rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: var(--space-sm);
+            position: relative;
+            z-index: 1000;
+        }
+
+        .btn-locate,
+        .btn-theme {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: hsl(var(--surface));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius-md);
+            color: hsl(var(--text-secondary));
+            cursor: pointer;
+            transition: all var(--transition-base);
+            position: relative;
+            z-index: 1001;
+        }
+
+        .btn-locate:hover,
+        .btn-theme:hover {
+            color: hsl(var(--primary));
+            border-color: hsl(var(--primary) / 0.3);
+            background: hsl(var(--primary) / 0.08);
+            transform: translateY(-1px);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .map-section {
+            position: relative;
+            flex: 1;
+            min-height: 500px;
+            height: calc(100vh - 140px);
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: #e8f4f8;
+        }
+
+        /* Leaflet Customizations */
+        .leaflet-container {
+            font-family: var(--font-body) !important;
+        }
+
+        .leaflet-control-zoom {
+            border: none !important;
+            box-shadow: var(--shadow-md) !important;
+            border-radius: var(--radius-md) !important;
+            overflow: hidden;
+        }
+
+        .leaflet-control-zoom a {
+            background: hsl(var(--surface)) !important;
+            color: hsl(var(--text-primary)) !important;
+            border-bottom: 1px solid hsl(var(--border)) !important;
+            transition: background var(--transition-fast);
+        }
+
+        .leaflet-control-zoom a:hover {
+            background: hsl(var(--primary) / 0.1) !important;
+            color: hsl(var(--primary)) !important;
+        }
+
+        .leaflet-control-zoom a:last-child {
+            border-bottom: none !important;
+        }
+
+        .custom-marker {
+            position: relative;
+        }
+
+        .marker-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--gradient-primary);
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-md);
+            border: 3px solid white;
+            transition: all var(--transition-base);
+        }
+
+        .marker-icon.restaurant {
+            background: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-hover)));
+        }
+
+        .marker-icon i {
+            transform: rotate(45deg);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .marker-icon:hover {
+            transform: rotate(-45deg) scale(1.1);
+        }
+
+        .user-marker {
+            width: 24px;
+            height: 24px;
+            background: hsl(var(--info));
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: var(--shadow-md), 0 0 0 8px hsl(var(--info) / 0.2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: var(--shadow-md), 0 0 0 8px hsl(199 89% 48% / 0.2);
+            }
+
+            50% {
+                box-shadow: var(--shadow-md), 0 0 0 16px hsl(199 89% 48% / 0.1);
+            }
+        }
+
+        .route-marker {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1rem;
+            color: white;
+            box-shadow: var(--shadow-lg);
+            border: 3px solid white;
+        }
+
+        .route-marker.start {
+            background: linear-gradient(135deg, hsl(var(--success)), hsl(142 71% 35%));
+        }
+
+        .route-marker.end {
+            background: linear-gradient(135deg, hsl(var(--error)), hsl(0 84% 50%));
+        }
+
+        .leaflet-popup-content-wrapper {
+            border-radius: var(--radius-lg) !important;
+            box-shadow: var(--shadow-xl) !important;
+            padding: 0 !important;
+            overflow: hidden;
+        }
+
+        .leaflet-popup-content {
+            margin: 0 !important;
+            min-width: 200px !important;
+        }
+
+        .leaflet-popup-tip {
+            background: white !important;
+        }
+
+        .popup-content {
+            background: white;
+            padding: var(--space-md);
+        }
+
+        .popup-content h4 {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            margin-bottom: var(--space-xs);
+            color: hsl(var(--text-primary));
+        }
+
+        .popup-sector {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            padding: 2px 8px;
+            background: hsl(var(--primary) / 0.1);
+            color: hsl(var(--primary));
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--space-sm);
+        }
+
+        .popup-restaurant {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            color: hsl(var(--accent));
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .popup-restaurant i {
+            font-size: 0.9rem;
+        }
+
+        .sector-label {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-display);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: hsl(var(--text-secondary));
+            border: 1px solid hsl(var(--border));
+            box-shadow: var(--shadow-sm);
+        }
+
+        .route-panel {
+            position: absolute;
+            top: var(--space-md);
+            left: var(--space-md);
+            z-index: 1000;
+            width: 380px;
+            max-width: calc(100% - 2rem);
+            background: hsl(var(--surface));
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            border: 1px solid hsl(var(--border));
+            overflow: hidden;
+        }
+
+        .route-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-md);
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .route-panel-header h3 {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .btn-collapse {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            border-radius: var(--radius-md);
+            color: white;
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+
+        .btn-collapse:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .btn-collapse.collapsed i {
+            transform: rotate(180deg);
+        }
+
+        .route-panel-content {
+            padding: var(--space-md);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            background: hsl(var(--surface));
+        }
+
+        .route-panel.collapsed .route-panel-content,
+        .route-panel.collapsed .route-results {
+            display: none;
+        }
+
+        .route-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+
+        .input-group label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: hsl(var(--text-secondary));
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .select-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .select-wrapper i {
+            position: absolute;
+            left: 12px;
+            font-size: 0.85rem;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .select-wrapper i.marker-a {
+            color: hsl(var(--success));
+        }
+
+        .select-wrapper i.marker-b {
+            color: hsl(var(--error));
+        }
+
+        .select-wrapper select {
+            width: 100%;
+            padding: 12px 40px 12px 36px;
+            background: hsl(var(--background));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius-md);
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            color: hsl(var(--text-primary));
+            cursor: pointer;
+            transition: all var(--transition-base);
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+
+        .select-wrapper select:hover {
+            border-color: hsl(var(--primary) / 0.5);
+        }
+
+        .select-wrapper select:focus {
+            outline: none;
+            border-color: hsl(var(--primary));
+            box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15);
+        }
+
+        .btn-swap {
+            width: 36px;
+            height: 36px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: hsl(var(--background));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius-md);
+            color: hsl(var(--text-secondary));
+            cursor: pointer;
+            transition: all var(--transition-base);
+            align-self: center;
+            transform: rotate(90deg);
+        }
+
+        .btn-swap:hover {
+            color: hsl(var(--primary));
+            border-color: hsl(var(--primary));
+            background: hsl(var(--primary) / 0.08);
+            transform: rotate(270deg);
+        }
+
+        .btn-calculate {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            padding: 12px var(--space-md);
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: var(--radius-md);
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+
+        .btn-calculate:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg), var(--shadow-glow);
+        }
+
+        .btn-calculate:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .route-results {
+            padding: var(--space-md);
+            border-top: 1px solid hsl(var(--border));
+            background: hsl(var(--background));
+        }
+
+        .route-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm);
+            background: hsl(var(--surface));
+            border-radius: var(--radius-md);
+        }
+
+        .stat-item i {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: hsl(var(--primary) / 0.1);
+            color: hsl(var(--primary));
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+        }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: hsl(var(--text-primary));
+            line-height: 1.1;
+        }
+
+        .stat-label {
+            font-size: 0.6rem;
+            color: hsl(var(--text-muted));
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .route-path {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-xs);
+            padding: var(--space-sm);
+            background: hsl(var(--surface));
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+            font-size: 0.8rem;
+        }
+
+        .route-path .path-node {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            padding: 4px 10px;
+            background: hsl(var(--primary) / 0.1);
+            color: hsl(var(--primary));
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+        }
+
+        .route-path .path-arrow {
+            color: hsl(var(--text-muted));
+        }
+
+        .btn-clear {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm);
+            background: hsl(var(--error) / 0.1);
+            border: 1px solid hsl(var(--error) / 0.2);
+            border-radius: var(--radius-md);
+            font-family: var(--font-body);
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: hsl(var(--error));
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+
+        .btn-clear:hover {
+            background: hsl(var(--error) / 0.15);
+            border-color: hsl(var(--error) / 0.3);
+        }
+
+        /* Map Legend */
+        .map-legend {
+            position: absolute;
+            bottom: 30px;
+            right: var(--space-md);
+            z-index: 1000;
+            display: flex;
+            gap: var(--space-md);
+            padding: var(--space-sm) var(--space-md);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            border: 1px solid hsl(var(--border));
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: 0.75rem;
+            color: hsl(var(--text-secondary));
+        }
+
+        .legend-marker {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .legend-marker.viewpoint {
+            background: hsl(var(--primary));
+        }
+
+        .legend-marker.restaurant {
+            background: hsl(var(--accent));
+        }
+
+        .legend-marker.user {
+            background: hsl(var(--info));
+            box-shadow: 0 0 0 3px hsl(var(--info) / 0.3);
+        }
+
+        .viewpoints-section {
+            padding: var(--space-2xl) var(--space-lg);
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+            display: none;
+        }
+
+        .viewpoints-section.active {
+            display: block;
+        }
+
+        .viewpoints-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-xl);
+            flex-wrap: wrap;
+            gap: var(--space-lg);
+        }
+
+        .section-title h2 {
+            font-size: 1.75rem;
+            margin-bottom: var(--space-xs);
+        }
+
+        .section-title p {
+            font-size: 0.9rem;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .filter-btn {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            background: hsl(var(--surface));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius-full);
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: hsl(var(--text-secondary));
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+
+        .filter-btn:hover {
+            border-color: hsl(var(--primary) / 0.3);
+            color: hsl(var(--primary));
+        }
+
+        .filter-btn.active {
+            background: hsl(var(--primary) / 0.1);
+            border-color: hsl(var(--primary) / 0.3);
+            color: hsl(var(--primary));
+        }
+
+        .filter-btn .count {
+            padding: 2px 8px;
+            background: hsl(var(--primary) / 0.15);
+            color: hsl(var(--primary));
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Viewpoints Grid */
+        .viewpoints-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: var(--space-lg);
+        }
+
+        .viewpoint-card {
+            background: hsl(var(--surface));
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            border: 1px solid hsl(var(--border));
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .viewpoint-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: hsl(var(--primary) / 0.3);
+        }
+
+        .viewpoint-card.selected {
+            border-color: hsl(var(--primary));
+            box-shadow: var(--shadow-lg), 0 0 0 2px hsl(var(--primary) / 0.2);
+        }
+
+        .card-image {
+            position: relative;
+            height: 180px;
+            overflow: hidden;
+            background: #f0f0f0;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform var(--transition-slow);
+        }
+
+        .viewpoint-card:hover .card-image img {
+            transform: scale(1.05);
+        }
+
+        .card-badge {
+            position: absolute;
+            top: var(--space-sm);
+            left: var(--space-sm);
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border-radius: var(--radius-full);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: hsl(var(--primary));
+        }
+
+        .card-rating {
+            position: absolute;
+            top: var(--space-sm);
+            right: var(--space-sm);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border-radius: var(--radius-full);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: hsl(var(--text-primary));
+        }
+
+        .card-rating i {
+            color: hsl(var(--accent));
+            font-size: 0.75rem;
+        }
+
+        .card-content {
+            padding: var(--space-md);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+            color: hsl(var(--text-primary));
+        }
+
+        .card-description {
+            font-size: 0.85rem;
+            color: hsl(var(--text-secondary));
+            margin-bottom: var(--space-md);
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-amenities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-xs);
+            margin-bottom: var(--space-md);
+        }
+
+        .amenity-tag {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: hsl(var(--background));
+            border-radius: var(--radius-sm);
+            font-size: 0.7rem;
+            color: hsl(var(--text-secondary));
+        }
+
+        .amenity-tag i {
+            font-size: 0.65rem;
+            color: hsl(var(--primary));
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: var(--space-md);
+            border-top: 1px solid hsl(var(--border));
+            margin-top: auto;
+        }
+
+        .card-time {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            font-size: 0.75rem;
+            color: hsl(var(--text-muted));
+        }
+
+        .card-time i {
+            color: hsl(var(--primary));
+        }
+
+        .restaurant-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: hsl(var(--accent) / 0.15);
+            color: hsl(var(--accent));
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        #toast-container {
+            position: fixed;
+            top: 80px;
+            right: var(--space-lg);
+            z-index: var(--z-toast);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+            max-width: 360px;
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            background: hsl(var(--surface));
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-xl);
+            border: 1px solid hsl(var(--border));
+            animation: slideIn 0.3s ease;
+            pointer-events: auto;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast-icon {
+            width: 36px;
+            height: 36px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+        }
+
+        .toast.success .toast-icon {
+            background: hsl(var(--success) / 0.15);
+            color: hsl(var(--success));
+        }
+
+        .toast.error .toast-icon {
+            background: hsl(var(--error) / 0.15);
+            color: hsl(var(--error));
+        }
+
+        .toast.info .toast-icon {
+            background: hsl(var(--info) / 0.15);
+            color: hsl(var(--info));
+        }
+
+        .toast.warning .toast-icon {
+            background: hsl(var(--warning) / 0.15);
+            color: hsl(var(--warning));
+        }
+
+        .toast-content h4 {
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+        }
+
+        .toast-content p {
+            font-size: 0.8rem;
+            color: hsl(var(--text-secondary));
+        }
+
+        /* Footer */
+        .footer {
+            background: hsl(var(--surface));
+            border-top: 1px solid hsl(var(--border));
+            padding: var(--space-lg);
+            z-index: 10;
+        }
+
+        .footer-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-lg);
+            flex-wrap: wrap;
+        }
+
+        .footer-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            max-width: 500px;
+        }
+
+        .footer-info i {
+            font-size: 1.5rem;
+            color: hsl(var(--primary));
+        }
+
+        .footer-info p {
+            font-size: 0.85rem;
+            color: hsl(var(--text-secondary));
+        }
+
+        .footer-links {
+            font-size: 0.85rem;
+            color: hsl(var(--text-muted));
+        }
+
+        .footer-links i.fa-heart {
+            color: hsl(var(--error));
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                padding: var(--space-sm) var(--space-md);
+            }
+
+            .logo-text {
+                display: none;
+            }
+
+            .nav-btn span {
+                display: none;
+            }
+
+            .route-panel {
+                left: var(--space-sm);
+                right: var(--space-sm);
+                width: auto;
+                max-width: none;
+            }
+
+            .route-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .map-legend {
+                left: var(--space-sm);
+                right: var(--space-sm);
+                bottom: 10px;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .viewpoints-section {
+                padding: var(--space-xl) var(--space-md);
+            }
+
+            .viewpoints-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .viewpoints-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-info {
+                flex-direction: column;
+            }
+
+            #toast-container {
+                left: var(--space-md);
+                right: var(--space-md);
+                max-width: none;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .university-branding {
+            text-align: right;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: hsl(var(--text-muted));
+        }
+
+        .university-branding strong {
+            color: hsl(var(--text-primary));
+            font-weight: 600;
+        }
+
+        .university-branding .uni-name {
+            color: hsl(var(--primary));
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .university-branding {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-mountain-sun"></i></div>
+                <div class="logo-text">
+                    <span class="logo-title">Islamabad</span>
+                    <span class="logo-subtitle">Viewpoints Explorer</span>
+                </div>
+            </div>
+            <nav class="nav">
+                <button class="nav-btn active" data-section="map"><i
+                        class="fas fa-map-location-dot"></i><span>Map</span></button>
+                <button class="nav-btn" data-section="viewpoints"><i
+                        class="fas fa-binoculars"></i><span>Viewpoints</span></button>
+            </nav>
+            <div class="header-actions">
+                <button class="btn-locate" id="locate-btn" aria-label="Find my location"><i
+                        class="fas fa-location-crosshairs"></i></button>
+                <button class="btn-theme" id="theme-toggle" aria-label="Toggle theme"><i
+                        class="fas fa-moon"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <section class="map-section" id="map-section">
+            <div class="route-panel">
+                <div class="route-panel-header">
+                    <h3><i class="fas fa-route"></i> Route Finder</h3>
+                    <button class="btn-collapse" id="collapse-route"><i class="fas fa-chevron-up"></i></button>
+                </div>
+                <div class="route-panel-content">
+                    <div class="route-inputs">
+                        <div class="input-group">
+                            <label for="from-select">FROM</label>
+                            <div class="select-wrapper">
+                                <i class="fas fa-circle-dot marker-a"></i>
+                                <select id="from-select" aria-label="Select starting point">
+                                    <option value="">Select starting point</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn-swap" id="swap-btn" aria-label="Swap locations"><i
+                                class="fas fa-arrow-right-arrow-left"></i></button>
+                        <div class="input-group">
+                            <label for="to-select">TO</label>
+                            <div class="select-wrapper">
+                                <i class="fas fa-location-dot marker-b"></i>
+                                <select id="to-select" aria-label="Select destination">
+                                    <option value="">Select destination</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-calculate" id="calculate-route" disabled><i
+                            class="fas fa-calculator"></i><span>Calculate Route</span></button>
+                </div>
+                <div class="route-results" id="route-results" style="display: none;">
+                    <div class="route-stats">
+                        <div class="stat-item"><i class="fas fa-ruler"></i>
+                            <div class="stat-info"><span class="stat-value" id="route-distance">--</span><span
+                                    class="stat-label">Distance</span></div>
+                        </div>
+                        <div class="stat-item"><i class="fas fa-clock"></i>
+                            <div class="stat-info"><span class="stat-value" id="route-time">--</span><span
+                                    class="stat-label">Est. Time</span></div>
+                        </div>
+                        <div class="stat-item"><i class="fas fa-microchip"></i>
+                            <div class="stat-info"><span class="stat-value" id="route-algorithm">--</span><span
+                                    class="stat-label">Algorithm</span></div>
+                        </div>
+                    </div>
+                    <div class="route-path" id="route-path"></div>
+                    <button class="btn-clear" id="clear-route"><i class="fas fa-times"></i><span>Clear
+                            Route</span></button>
+                </div>
+            </div>
+            <div id="map"></div>
+            <div class="map-legend">
+                <div class="legend-item"><span class="legend-marker viewpoint"></span><span>Viewpoint</span></div>
+                <div class="legend-item"><span class="legend-marker restaurant"></span><span>With Restaurant</span>
+                </div>
+                <div class="legend-item"><span class="legend-marker user"></span><span>Your Location</span></div>
+            </div>
+        </section>
+
+        <section class="viewpoints-section" id="viewpoints-section">
+            <div class="viewpoints-header">
+                <div class="section-title">
+                    <h2>Explore Viewpoints</h2>
+                    <p>Discover the most scenic spots in Islamabad</p>
+                </div>
+                <div class="filter-controls">
+                    <button class="filter-btn active" data-filter="all"><i class="fas fa-globe"></i><span>All
+                            Places</span><span class="count" id="all-count">0</span></button>
+                    <button class="filter-btn" data-filter="restaurant"><i class="fas fa-utensils"></i><span>With
+                            Restaurants</span><span class="count" id="restaurant-count">0</span></button>
+                </div>
+            </div>
+            <div class="viewpoints-grid" id="viewpoints-grid"></div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-info"><i class="fas fa-mountain-sun"></i>
+                <p>Islamabad Viewpoints Explorer — Discover the beauty of Pakistan's capital through its scenic
+                    viewpoints and cultural landmarks.</p>
+            </div>
+            <div class="footer-links university-branding">
+                <strong>Islamabad Viewpoints Explorer</strong><br>
+                Developed by <strong>Umer/Taha</strong> — BS software engineering<br>
+                <span class="Bahria University Islamabad">Bahria University Islamabad</span><br>
+                © 2025 · Academic Project
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script>
+
+        class HashMap {
+            constructor() {
+                this.map = new Map();
+            }
+            set(key, value) { this.map.set(key, value); }
+            get(key) { return this.map.get(key); }
+            has(key) { return this.map.has(key); }
+            delete(key) { return this.map.delete(key); }
+            keys() { return Array.from(this.map.keys()); }
+            values() { return Array.from(this.map.values()); }
+            size() { return this.map.size; }
+            forEach(callback) { this.map.forEach(callback); }
+        }
+
+        class MinHeap {
+            constructor() {
+                this.heap = [];
+            }
+
+            // Get parent index
+            getParentIndex(i) { return Math.floor((i - 1) / 2); }
+
+            getLeftChildIndex(i) { return 2 * i + 1; }
+
+            getRightChildIndex(i) { return 2 * i + 2; }
+
+            swap(i, j) {
+                [this.heap[i], this.heap[j]] = [this.heap[j], this.heap[i]];
+            }
+
+            insert(node) {
+                this.heap.push(node);
+                this.heapifyUp(this.heap.length - 1);
+            }
+
+            heapifyUp(index) {
+                while (index > 0) {
+                    const parentIndex = this.getParentIndex(index);
+                    if (this.heap[parentIndex].priority > this.heap[index].priority) {
+                        this.swap(parentIndex, index);
+                        index = parentIndex;
+                    } else {
+                        break;
+                    }
+                }
+            }
+
+            extractMin() {
+                if (this.heap.length === 0) return null;
+                if (this.heap.length === 1) return this.heap.pop();
+
+                const min = this.heap[0];
+                this.heap[0] = this.heap.pop();
+                this.heapifyDown(0);
+                return min;
+            }
+
+            heapifyDown(index) {
+                const length = this.heap.length;
+                while (true) {
+                    let smallest = index;
+                    const left = this.getLeftChildIndex(index);
+                    const right = this.getRightChildIndex(index);
+
+                    if (left < length && this.heap[left].priority < this.heap[smallest].priority) {
+                        smallest = left;
+                    }
+                    if (right < length && this.heap[right].priority < this.heap[smallest].priority) {
+                        smallest = right;
+                    }
+                    if (smallest !== index) {
+                        this.swap(index, smallest);
+                        index = smallest;
+                    } else {
+                        break;
+                    }
+                }
+            }
+
+            isEmpty() { return this.heap.length === 0; }
+            size() { return this.heap.length; }
+        }
+
+        class Graph {
+            constructor() {
+                this.adjacencyList = new HashMap();
+                this.vertices = new HashMap();
+            }
+
+            addVertex(id, data) {
+                if (!this.adjacencyList.has(id)) {
+                    this.adjacencyList.set(id, []);
+                    this.vertices.set(id, data);
+                }
+            }
+
+            addEdge(from, to, weight) {
+                if (this.adjacencyList.has(from) && this.adjacencyList.has(to)) {
+                    this.adjacencyList.get(from).push({ node: to, weight: weight });
+                    this.adjacencyList.get(to).push({ node: from, weight: weight }); // Undirected graph
+                }
+            }
+
+            getNeighbors(id) {
+                return this.adjacencyList.get(id) || [];
+            }
+
+            getVertex(id) {
+                return this.vertices.get(id);
+            }
+
+            getAllVertices() {
+                return this.adjacencyList.keys();
+            }
+        }
+
+        class DijkstraAlgorithm {
+            constructor(graph) {
+                this.graph = graph;
+            }
+
+            findShortestPath(startId, endId) {
+                const distances = new HashMap();
+                const previous = new HashMap();
+                const visited = new Set();
+                const priorityQueue = new MinHeap();
+
+                this.graph.getAllVertices().forEach(vertex => {
+                    distances.set(vertex, Infinity);
+                    previous.set(vertex, null);
+                });
+
+                distances.set(startId, 0);
+                priorityQueue.insert({ id: startId, priority: 0 });
+
+                while (!priorityQueue.isEmpty()) {
+                    const current = priorityQueue.extractMin();
+                    const currentId = current.id;
+
+                    if (visited.has(currentId)) continue;
+                    visited.add(currentId);
+
+                    if (currentId === endId) break;
+
+                    const neighbors = this.graph.getNeighbors(currentId);
+                    for (const neighbor of neighbors) {
+                        if (visited.has(neighbor.node)) continue;
+
+                        const newDistance = distances.get(currentId) + neighbor.weight;
+
+                        if (newDistance < distances.get(neighbor.node)) {
+                            distances.set(neighbor.node, newDistance);
+                            previous.set(neighbor.node, currentId);
+                            priorityQueue.insert({ id: neighbor.node, priority: newDistance });
+                        }
+                    }
+                }
+
+                return this.reconstructPath(previous, startId, endId, distances.get(endId));
+            }
+
+            reconstructPath(previous, startId, endId, totalDistance) {
+                const path = [];
+                let current = endId;
+
+                while (current !== null) {
+                    path.unshift(current);
+                    current = previous.get(current);
+                }
+
+                // Check if path exists
+                if (path[0] !== startId) {
+                    return { path: [], distance: Infinity };
+                }
+
+                return { path: path, distance: totalDistance };
+            }
+        }
+
+        class BinarySearch {
+            static findNearest(sortedArray, target, compareFn) {
+                let left = 0;
+                let right = sortedArray.length - 1;
+                let nearest = null;
+                let minDiff = Infinity;
+
+                while (left <= right) {
+                    const mid = Math.floor((left + right) / 2);
+                    const diff = Math.abs(compareFn(sortedArray[mid], target));
+
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        nearest = sortedArray[mid];
+                    }
+
+                    if (compareFn(sortedArray[mid], target) < 0) {
+                        left = mid + 1;
+                    } else if (compareFn(sortedArray[mid], target) > 0) {
+                        right = mid - 1;
+                    } else {
+                        return sortedArray[mid];
+                    }
+                }
+                return nearest;
+            }
+        }
+
+        class QuickSort {
+            static sort(array, compareFn) {
+                if (array.length <= 1) return array;
+                return this.quickSort(array, 0, array.length - 1, compareFn);
+            }
+
+            static quickSort(arr, low, high, compareFn) {
+                if (low < high) {
+                    const pivotIndex = this.partition(arr, low, high, compareFn);
+                    this.quickSort(arr, low, pivotIndex - 1, compareFn);
+                    this.quickSort(arr, pivotIndex + 1, high, compareFn);
+                }
+                return arr;
+            }
+
+            static partition(arr, low, high, compareFn) {
+                const pivot = arr[high];
+                let i = low - 1;
+
+                for (let j = low; j < high; j++) {
+                    if (compareFn(arr[j], pivot) <= 0) {
+                        i++;
+                        [arr[i], arr[j]] = [arr[j], arr[i]];
+                    }
+                }
+                [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+                return i + 1;
+            }
+        }
+
+        function haversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Earth's radius in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        const VIEWPOINTS_DATA = [
+            { id: 1, name: "Faisal Mosque", latitude: 33.7295, longitude: 73.0372, description: "The largest mosque in South Asia, an iconic symbol of Islamabad.", sector: "E-7", image: "https://gypsytours.pk/wp-content/uploads/2023/03/Faisal-Mosque-Islamabad.jpg", amenities: ["Parking", "Washrooms", "Guided Tours", "Prayer Hall"], rating: 4.9, bestVisitTime: "Sunset & Night", restaurants: [], hasRestaurant: false },
+            { id: 2, name: "Daman-e-Koh", latitude: 33.7431, longitude: 73.0607, description: "A popular hilltop garden offering panoramic views of Islamabad.", sector: "Margalla Hills", image: "https://humenglish.com/wp-content/uploads/2024/04/Daman-e-Koh.jpg", amenities: ["Parking", "Viewing Deck", "Cafe"], rating: 4.7, bestVisitTime: "Morning & Evening", restaurants: ["Daman-e-Koh Cafe"], hasRestaurant: true },
+            { id: 3, name: "Pir Sohawa", latitude: 33.7636, longitude: 73.0578, description: "The highest point in Margalla Hills accessible by road.", sector: "Margalla Hills", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGJOo2RDeLaseQAd2MS2qbYKoCqh_AEXU1uw&s", amenities: ["Restaurants", "Parking", "Hiking Trails"], rating: 4.8, bestVisitTime: "Evening & Night", restaurants: ["La Montana", "Gloria Jeans"], hasRestaurant: true },
+            { id: 4, name: "Monal Restaurant", latitude: 33.7584, longitude: 73.0456, description: "Famous hilltop restaurant with panoramic views.", sector: "Margalla Hills", image: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/11/cb/e8/dd/monal-with-clouds-in.jpg?w=900&h=500&s=1", amenities: ["Fine Dining", "Outdoor Seating", "Parking"], rating: 4.6, bestVisitTime: "Evening & Night", restaurants: ["The Monal"], hasRestaurant: true },
+            { id: 5, name: "Pakistan Monument", latitude: 33.6932, longitude: 73.0689, description: "National monument representing Pakistan's provinces.", sector: "Shakarparian", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlLt1uuoCpm9Pqpk6QE3UURQnmBS0bdM5bng&s", amenities: ["Museum", "Gardens", "Parking"], rating: 4.8, bestVisitTime: "Morning & Sunset", restaurants: [], hasRestaurant: false },
+            { id: 6, name: "Rawal Lake", latitude: 33.7043, longitude: 73.1278, description: "A beautiful reservoir offering boating and picnic spots.", sector: "Bani Gala", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTDf6ani8qq0bAPRSo2pCX3tRkh0cAC28K6Fg&s", amenities: ["Boating", "Fishing", "Picnic Areas"], rating: 4.5, bestVisitTime: "Morning & Evening", restaurants: ["Rawal Lake Restaurant"], hasRestaurant: true },
+            { id: 7, name: "Saidpur Village", latitude: 33.7450, longitude: 73.0667, description: "A beautifully restored heritage village.", sector: "Margalla Hills", image: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1c/18/07/53/a-model-village-in-islamabad.jpg?w=900&h=-1&s=1", amenities: ["Heritage Sites", "Restaurants", "Art Galleries"], rating: 4.6, bestVisitTime: "Evening", restaurants: ["Des Pardes", "Rajput House"], hasRestaurant: true },
+            { id: 8, name: "Fatima Jinnah Park", latitude: 33.7000, longitude: 73.0563, description: "Islamabad's largest public recreational park.", sector: "F-9", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSev0aVVSJVWx1JpOQiUVM8kCH2jNf4uzlwg&s", amenities: ["Jogging Tracks", "Sports Fields", "Playgrounds"], rating: 4.4, bestVisitTime: "Morning & Evening", restaurants: [], hasRestaurant: false },
+            { id: 9, name: "Shakarparian Hills", latitude: 33.6889, longitude: 73.0789, description: "Scenic hills with viewpoints and gardens.", sector: "Shakarparian", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfBbU3E2g-H8sVgzM6_61VvyvI3IAeUjvCpw&s", amenities: ["Gardens", "Viewpoints", "Walking Paths"], rating: 4.3, bestVisitTime: "Morning & Sunset", restaurants: [], hasRestaurant: false },
+            { id: 10, name: "Centaurus Mall", latitude: 33.7066, longitude: 73.0551, description: "Premier shopping destination with observation deck.", sector: "F-8", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQfaKNF_Hwo9cekzs_D-LhhuRE8ud-FM81dUQ&s", amenities: ["Shopping", "Food Court", "Cinema"], rating: 4.5, bestVisitTime: "Evening & Night", restaurants: ["Food Court"], hasRestaurant: true },
+            { id: 11, name: "Trail 3 - Margalla Hills", latitude: 33.7524, longitude: 73.0672, description: "Popular hiking trail through Margalla Hills.", sector: "Margalla Hills", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3WlkwUhKZ2lEGWdnm1-Jo7jbUDgnuJxi6Ow&s", amenities: ["Hiking", "Wildlife", "Photography"], rating: 4.7, bestVisitTime: "Early Morning", restaurants: [], hasRestaurant: false },
+            { id: 12, name: "Trail 5 - Margalla Hills", latitude: 33.7580, longitude: 73.0820, description: "Moderately challenging trail to scenic viewpoints.", sector: "Margalla Hills", image: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1b/d7/58/dc/a-morning-hike-and-bit.jpg?w=800&h=500&s=1", amenities: ["Hiking", "Mountain Views", "Bird Watching"], rating: 4.6, bestVisitTime: "Morning", restaurants: [], hasRestaurant: false },
+            { id: 13, name: "Lok Virsa Museum", latitude: 33.6856, longitude: 73.0697, description: "National folk heritage museum.", sector: "Shakarparian", image: "https://cdn-blog.zameen.com/blog/wp-content/uploads/2020/09/IMG20190527123606--1024x640.jpg", amenities: ["Museum", "Cultural Events", "Gift Shop"], rating: 4.4, bestVisitTime: "Morning & Afternoon", restaurants: ["Lok Virsa Cafeteria"], hasRestaurant: true },
+            { id: 14, name: "Rose & Jasmine Garden", latitude: 33.6900, longitude: 73.0750, description: "Beautiful terraced garden with flowers.", sector: "Shakarparian", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuqQiqnTnbGTBjOd6Og7JpCBUu7lnqQ5d2Nw&s", amenities: ["Gardens", "Walking Paths", "Photography"], rating: 4.5, bestVisitTime: "Spring Morning", restaurants: [], hasRestaurant: false },
+            { id: 15, name: "Japanese Park", latitude: 33.6850, longitude: 73.0680, description: "Serene Japanese-themed park.", sector: "Shakarparian", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7H6BcxtEFWYK-p0h63MpAljaR2sL7RIwgMw&s", amenities: ["Japanese Garden", "Ponds", "Walking Trails"], rating: 4.3, bestVisitTime: "Morning & Evening", restaurants: [], hasRestaurant: false },
+            { id: 16, name: "Lake View Park", latitude: 33.7100, longitude: 73.1100, description: "Family-friendly park at Rawal Lake.", sector: "Rawal", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3oJku3NOa1j6oq1-_WFPbqV3-xQ7m96JiZw&s", amenities: ["Boating", "Mini Golf", "Bird Aviary"], rating: 4.4, bestVisitTime: "Weekend Afternoon", restaurants: ["Lake View Restaurant"], hasRestaurant: true },
+            { id: 17, name: "Jinnah Super Market", latitude: 33.7128, longitude: 73.0722, description: "Vibrant commercial area with cafes.", sector: "F-7", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGZZ7636Qqlx0nUNBCaCDnKLgUELw6_2VbRw&s", amenities: ["Shopping", "Cafes", "Food Street"], rating: 4.2, bestVisitTime: "Evening", restaurants: ["Savour Foods", "Chaaye Khana"], hasRestaurant: true },
+            { id: 18, name: "Daman-e-Koh Viewpoint", latitude: 33.7450, longitude: 73.0620, description: "Premium viewing platform with 360-degree views.", sector: "Margalla Hills", image: "https://img1.advisor.travel/1314x680px-Daman_e_Koh_1.jpg", amenities: ["Telescope", "Photo Points", "Benches"], rating: 4.8, bestVisitTime: "Sunset", restaurants: ["Viewpoint Cafe"], hasRestaurant: true },
+            { id: 19, name: "Islamabad Zoo", latitude: 33.7367, longitude: 73.0667, description: "Modern zoo with diverse wildlife.", sector: "Margalla Hills", image: "https://thegulfobserver.com/wp-content/uploads/2024/02/images-2024-02-06T172824.976.jpeg", amenities: ["Wildlife", "Children Area", "Cafeteria"], rating: 4.1, bestVisitTime: "Morning", restaurants: ["Zoo Cafeteria"], hasRestaurant: true },
+            { id: 20, name: "Red Zone", latitude: 33.7265, longitude: 73.0933, description: "A high-security government area in Islamabad housing major state institutions.", sector: "G-5", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTorPu5OCJPkdDyRRaoaT_4XUEv-MwAKv1RRw&s", amenities: ["view point"], rating: 4.3, bestVisitTime: "Evening", hasRestaurant: false },
+        ];
+
+        const SECTOR_LABELS = [
+            { name: "F-6", lat: 33.7235, lng: 73.0700 },
+            { name: "F-7", lat: 33.7128, lng: 73.0750 },
+            { name: "F-8", lat: 33.7050, lng: 73.0550 },
+            { name: "F-9", lat: 33.7000, lng: 73.0450 },
+            { name: "G-6", lat: 33.7200, lng: 73.0850 },
+            { name: "G-7", lat: 33.7100, lng: 73.0900 },
+            { name: "E-7", lat: 33.7300, lng: 73.0450 },
+            { name: "Blue Area", lat: 33.7100, lng: 73.0600 }
+        ];
+
+        const ISLAMABAD_BOUNDS = { north: 33.8000, south: 33.6500, east: 73.2000, west: 72.9500 };
+        const ISLAMABAD_CENTER = { lat: 33.7100, lng: 73.0650 };
+        const MAP_CONFIG = { defaultZoom: 12, minZoom: 11, maxZoom: 17, tileLayer: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', attribution: '&copy; OpenStreetMap &copy; CARTO' };
+
+        const AMENITY_ICONS = {
+            'Parking': 'fa-solid fa-square-parking', 'Washrooms': 'fa-solid fa-restroom', 'Guided Tours': 'fa-solid fa-person-walking',
+            'Prayer Hall': 'fa-solid fa-mosque', 'Viewing Deck': 'fa-solid fa-binoculars', 'Cafe': 'fa-solid fa-mug-hot',
+            'Restaurants': 'fa-solid fa-utensils', 'Hiking Trails': 'fa-solid fa-person-hiking', 'Fine Dining': 'fa-solid fa-champagne-glasses',
+            'Outdoor Seating': 'fa-solid fa-chair', 'Museum': 'fa-solid fa-landmark', 'Gardens': 'fa-solid fa-seedling',
+            'Boating': 'fa-solid fa-sailboat', 'Fishing': 'fa-solid fa-fish', 'Picnic Areas': 'fa-solid fa-basket-shopping',
+            'Heritage Sites': 'fa-solid fa-monument', 'Art Galleries': 'fa-solid fa-palette', 'Jogging Tracks': 'fa-solid fa-person-running',
+            'Sports Fields': 'fa-solid fa-futbol', 'Playgrounds': 'fa-solid fa-children', 'Viewpoints': 'fa-solid fa-mountain-sun',
+            'Walking Paths': 'fa-solid fa-road', 'Shopping': 'fa-solid fa-bag-shopping', 'Food Court': 'fa-solid fa-burger',
+            'Cinema': 'fa-solid fa-film', 'Hiking': 'fa-solid fa-person-hiking', 'Wildlife': 'fa-solid fa-paw',
+            'Photography': 'fa-solid fa-camera-retro', 'Mountain Views': 'fa-solid fa-mountain', 'Bird Watching': 'fa-solid fa-dove',
+            'Cultural Events': 'fa-solid fa-theater-masks', 'Gift Shop': 'fa-solid fa-gift', 'Japanese Garden': 'fa-solid fa-torii-gate',
+            'Ponds': 'fa-solid fa-water', 'Walking Trails': 'fa-solid fa-shoe-prints', 'Mini Golf': 'fa-solid fa-golf-ball-tee',
+            'Bird Aviary': 'fa-solid fa-feather', 'Cafes': 'fa-solid fa-coffee', 'Food Street': 'fa-solid fa-bowl-food',
+            'Telescope': 'fa-solid fa-binoculars', 'Photo Points': 'fa-solid fa-image', 'Benches': 'fa-solid fa-couch',
+            'Children Area': 'fa-solid fa-child', 'Cafeteria': 'fa-solid fa-utensils'
+        };
+
+        let map = null;
+        let markers = [];
+        let userMarker = null;
+        let routeLayer = null;
+        let routeMarkersLayer = null;
+        let selectedViewpoint = null;
+        let currentSection = 'map';
+        let currentFilter = 'all';
+        let isDarkMode = false;
+
+        const viewpointMap = new HashMap();
+        VIEWPOINTS_DATA.forEach(v => viewpointMap.set(v.id, v));
+
+        const locationGraph = new Graph();
+
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('Initializing Islamabad Viewpoints Explorer...');
+            console.log('DSA Structures: HashMap, MinHeap, Graph, Dijkstra Algorithm, QuickSort, BinarySearch');
+
+            initializeTheme();
+            buildLocationGraph();
+            initializeMap();
+            initializeViewpoints();
+            initializeEventListeners();
+            populateDropdowns();
+            updateFilterCounts();
+
+            setTimeout(() => {
+                showToast('success', 'Welcome!', 'Explore scenic viewpoints in Islamabad');
+            }, 500);
+        });
+
+        function buildLocationGraph() {
+            // Add all viewpoints as vertices
+            VIEWPOINTS_DATA.forEach(vp => {
+                locationGraph.addVertex(vp.id, vp);
+            });
+
+            for (let i = 0; i < VIEWPOINTS_DATA.length; i++) {
+                for (let j = i + 1; j < VIEWPOINTS_DATA.length; j++) {
+                    const vp1 = VIEWPOINTS_DATA[i];
+                    const vp2 = VIEWPOINTS_DATA[j];
+                    const distance = haversineDistance(vp1.latitude, vp1.longitude, vp2.latitude, vp2.longitude);
+                    locationGraph.addEdge(vp1.id, vp2.id, distance);
+                }
+            }
+            console.log('Graph built with', locationGraph.getAllVertices().length, 'vertices');
+        }
+
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('islamabad-theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+                isDarkMode = true;
+            }
+            updateThemeIcon();
+        }
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark', isDarkMode);
+            localStorage.setItem('islamabad-theme', isDarkMode ? 'dark' : 'light');
+            updateThemeIcon();
+            showToast('info', 'Theme Changed', isDarkMode ? 'Dark mode enabled' : 'Light mode enabled');
+        }
+
+        function updateThemeIcon() {
+            const themeBtn = document.getElementById('theme-toggle');
+            if (themeBtn) {
+                const icon = themeBtn.querySelector('i');
+                if (icon) {
+                    icon.className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+                }
+            }
+        }
+
+        function getUserLocation() {
+            // Check browser support
+            if (!navigator.geolocation) {
+                showToast('error', 'Not Supported', 'Geolocation is not supported by your browser');
+                return;
+            }
+
+            if (window.location.protocol === 'file:') {
+                showToast('error', 'File Protocol', 'Geolocation does not work with file:// protocol. Please use a web server (e.g., Live Server with localhost).');
+                return;
+            }
+
+            showToast('info', 'Locating...', 'Finding your current location');
+
+            const options = {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
+            };
+
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    // Check if within Islamabad bounds
+                    if (lat >= ISLAMABAD_BOUNDS.south && lat <= ISLAMABAD_BOUNDS.north &&
+                        lng >= ISLAMABAD_BOUNDS.west && lng <= ISLAMABAD_BOUNDS.east) {
+                        addUserMarker(lat, lng);
+                        map.setView([lat, lng], 14);
+                        showToast('success', 'Location Found', 'Your location has been marked on the map');
+
+                        // Find nearest viewpoint using our DSA
+                        findNearestViewpoint(lat, lng);
+                    } else {
+                        showToast('warning', 'Outside Area', 'You appear to be outside Islamabad. Showing city center.');
+                        map.setView([ISLAMABAD_CENTER.lat, ISLAMABAD_CENTER.lng], MAP_CONFIG.defaultZoom);
+                    }
+                },
+                function (error) {
+                    let errorMsg = 'Unable to get your location';
+
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg = 'Location permission denied. Please enable location access in browser settings.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg = 'Location information unavailable. Please try again.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg = 'Location request timed out. Please try again.';
+                            break;
+                    }
+
+                    showToast('error', 'Location Error', errorMsg);
+                    console.error('Geolocation error:', error);
+                },
+                options
+            );
+        }
+
+        function findNearestViewpoint(userLat, userLng) {
+            let nearest = null;
+            let minDistance = Infinity;
+
+            VIEWPOINTS_DATA.forEach(vp => {
+                const distance = haversineDistance(userLat, userLng, vp.latitude, vp.longitude);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearest = vp;
+                }
+            });
+
+            if (nearest) {
+                showToast('info', 'Nearest Spot', `${nearest.name} is ${minDistance.toFixed(1)} km away`);
+            }
+        }
+
+        function addUserMarker(lat, lng) {
+            if (userMarker) {
+                map.removeLayer(userMarker);
+            }
+
+            const userIcon = L.divIcon({
+                className: 'user-marker-container',
+                html: '<div class="user-marker"></div>',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            });
+
+            userMarker = L.marker([lat, lng], { icon: userIcon }).addTo(map);
+            userMarker.bindPopup('<div class="popup-content"><h4>Your Location</h4></div>');
+        }
+
+        function initializeMap() {
+            const mapContainer = document.getElementById('map');
+            if (!mapContainer) return;
+
+            map = L.map('map', {
+                center: [ISLAMABAD_CENTER.lat, ISLAMABAD_CENTER.lng],
+                zoom: MAP_CONFIG.defaultZoom,
+                minZoom: MAP_CONFIG.minZoom,
+                maxZoom: MAP_CONFIG.maxZoom,
+                zoomControl: true
+            });
+
+            L.tileLayer(MAP_CONFIG.tileLayer, {
+                attribution: MAP_CONFIG.attribution,
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+
+            const bounds = L.latLngBounds(
+                [ISLAMABAD_BOUNDS.south, ISLAMABAD_BOUNDS.west],
+                [ISLAMABAD_BOUNDS.north, ISLAMABAD_BOUNDS.east]
+            );
+            map.setMaxBounds(bounds);
+
+            addViewpointMarkers();
+            addSectorLabels();
+            map.zoomControl.setPosition('bottomright');
+
+            setTimeout(() => map.invalidateSize(), 100);
+        }
+
+        function addViewpointMarkers() {
+            VIEWPOINTS_DATA.forEach(viewpoint => {
+                const marker = createViewpointMarker(viewpoint);
+                markers.push({ marker, viewpoint });
+            });
+        }
+
+        function createViewpointMarker(viewpoint) {
+            const iconClass = viewpoint.hasRestaurant ? 'restaurant' : '';
+            const iconSymbol = viewpoint.hasRestaurant ? 'fa-utensils' : 'fa-mountain-sun';
+
+            const customIcon = L.divIcon({
+                className: 'custom-marker',
+                html: `<div class="marker-icon ${iconClass}"><i class="fas ${iconSymbol}"></i></div>`,
+                iconSize: [44, 44],
+                iconAnchor: [22, 44],
+                popupAnchor: [0, -44]
+            });
+
+            const marker = L.marker([viewpoint.latitude, viewpoint.longitude], { icon: customIcon }).addTo(map);
+            marker.bindPopup(createPopupContent(viewpoint));
+            marker.on('click', () => selectViewpoint(viewpoint));
+            return marker;
+        }
+
+        function createPopupContent(viewpoint) {
+            const restaurantHTML = viewpoint.hasRestaurant ?
+                '<div class="popup-restaurant"><i class="fas fa-utensils"></i><span>Restaurant Available</span></div>' : '';
+            return `<div class="popup-content"><h4>${viewpoint.name}</h4><span class="popup-sector"><i class="fas fa-map-pin"></i> ${viewpoint.sector}</span>${restaurantHTML}</div>`;
+        }
+
+        function addSectorLabels() {
+            SECTOR_LABELS.forEach(sector => {
+                const icon = L.divIcon({
+                    className: 'sector-label-icon',
+                    html: `<div class="sector-label">${sector.name}</div>`,
+                    iconSize: [60, 20],
+                    iconAnchor: [30, 10]
+                });
+                L.marker([sector.lat, sector.lng], { icon: icon, interactive: false }).addTo(map);
+            });
+        }
+
+        async function calculateRoute() {
+            const fromId = parseInt(document.getElementById('from-select').value);
+            const toId = parseInt(document.getElementById('to-select').value);
+
+            if (!fromId || !toId) {
+                showToast('warning', 'Select Locations', 'Please select both start and end locations');
+                return;
+            }
+            if (fromId === toId) {
+                showToast('warning', 'Same Location', 'Start and end locations cannot be the same');
+                return;
+            }
+
+            const fromViewpoint = viewpointMap.get(fromId);
+            const toViewpoint = viewpointMap.get(toId);
+            clearRoute();
+
+            const calculateBtn = document.getElementById('calculate-route');
+            calculateBtn.disabled = true;
+            calculateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Calculating...</span>';
+
+            try {
+                const dijkstra = new DijkstraAlgorithm(locationGraph);
+                const result = dijkstra.findShortestPath(fromId, toId);
+
+                if (result.path.length > 0) {
+                    const coordinates = result.path.map(id => {
+                        const vp = viewpointMap.get(id);
+                        return [vp.latitude, vp.longitude];
+                    });
+
+                    displayRoute(coordinates, fromViewpoint, toViewpoint);
+
+                    const pathViewpoints = result.path.map(id => viewpointMap.get(id));
+                    displayRouteInfo(result.distance, result.distance / 40, "Dijkstra's", pathViewpoints);
+
+                    showToast('success', 'Route Calculated', `Found shortest path using Dijkstra's Algorithm`);
+                }
+            } catch (error) {
+                console.error('Route calculation error:', error);
+                showToast('error', 'Error', 'Failed to calculate route');
+            } finally {
+                calculateBtn.disabled = false;
+                calculateBtn.innerHTML = '<i class="fas fa-calculator"></i><span>Calculate Route</span>';
+            }
+        }
+
+        function displayRoute(coordinates, from, to) {
+            if (routeLayer) map.removeLayer(routeLayer);
+            if (routeMarkersLayer) map.removeLayer(routeMarkersLayer);
+
+            routeLayer = L.polyline(coordinates, {
+                color: 'hsl(210, 70%, 50%)',
+                weight: 5,
+                opacity: 0.8,
+                smoothFactor: 1
+            }).addTo(map);
+
+            routeMarkersLayer = L.layerGroup().addTo(map);
+
+            const startIcon = L.divIcon({
+                className: 'route-marker-icon',
+                html: '<div class="route-marker start">A</div>',
+                iconSize: [36, 36],
+                iconAnchor: [18, 18]
+            });
+            L.marker([from.latitude, from.longitude], { icon: startIcon }).addTo(routeMarkersLayer);
+
+            const endIcon = L.divIcon({
+                className: 'route-marker-icon',
+                html: '<div class="route-marker end">B</div>',
+                iconSize: [36, 36],
+                iconAnchor: [18, 18]
+            });
+            L.marker([to.latitude, to.longitude], { icon: endIcon }).addTo(routeMarkersLayer);
+
+            map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
+        }
+
+        function displayRouteInfo(distance, time, algorithm, path) {
+            document.getElementById('route-results').style.display = 'block';
+            document.getElementById('route-distance').textContent = distance.toFixed(1) + ' km';
+            document.getElementById('route-time').textContent = Math.round(time * 60) + ' min';
+            document.getElementById('route-algorithm').textContent = algorithm;
+
+            const pathContainer = document.getElementById('route-path');
+            pathContainer.innerHTML = path.map((vp, index) => {
+                const arrow = index < path.length - 1 ? '<i class="fas fa-arrow-right path-arrow"></i>' : '';
+                return `<span class="path-node">${vp.name}</span>${arrow}`;
+            }).join('');
+        }
+
+        function clearRoute() {
+            if (routeLayer) { map.removeLayer(routeLayer); routeLayer = null; }
+            if (routeMarkersLayer) { map.removeLayer(routeMarkersLayer); routeMarkersLayer = null; }
+            document.getElementById('route-results').style.display = 'none';
+        }
+
+        function initializeViewpoints() {
+            renderViewpointCards(VIEWPOINTS_DATA);
+        }
+
+        function renderViewpointCards(viewpoints) {
+            const grid = document.getElementById('viewpoints-grid');
+            grid.innerHTML = '';
+
+            const sortedViewpoints = QuickSort.sort([...viewpoints], (a, b) => b.rating - a.rating);
+            sortedViewpoints.forEach(vp => grid.appendChild(createViewpointCard(vp)));
+        }
+
+        function createViewpointCard(viewpoint) {
+            const card = document.createElement('div');
+            card.className = 'viewpoint-card';
+            card.dataset.id = viewpoint.id;
+
+            const amenitiesHTML = viewpoint.amenities.slice(0, 4).map(amenity => {
+                const icon = AMENITY_ICONS[amenity] || 'fa-solid fa-check';
+                return `<span class="amenity-tag"><i class="${icon}"></i>${amenity}</span>`;
+            }).join('');
+
+            card.innerHTML = `
+                <div class="card-image">
+                    <img src="${viewpoint.image}" alt="${viewpoint.name}" loading="lazy">
+                    <span class="card-badge">${viewpoint.sector}</span>
+                    <span class="card-rating"><i class="fas fa-star"></i>${viewpoint.rating}</span>
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">${viewpoint.name}</h3>
+                    <p class="card-description">${viewpoint.description}</p>
+                    <div class="card-amenities">${amenitiesHTML}</div>
+                    <div class="card-footer">
+                        <span class="card-time"><i class="fas fa-clock"></i>${viewpoint.bestVisitTime}</span>
+                        ${viewpoint.hasRestaurant ? '<span class="restaurant-badge"><i class="fas fa-utensils"></i>Restaurant</span>' : ''}
+                    </div>
+                </div>
+            `;
+
+            card.addEventListener('click', () => {
+                selectViewpoint(viewpoint);
+                switchSection('map');
+            });
+
+            return card;
+        }
+
+        function selectViewpoint(viewpoint) {
+            selectedViewpoint = viewpoint;
+            document.querySelectorAll('.viewpoint-card').forEach(card => {
+                card.classList.toggle('selected', parseInt(card.dataset.id) === viewpoint.id);
+            });
+            const markerData = markers.find(m => m.viewpoint.id === viewpoint.id);
+            if (markerData) {
+                map.setView([viewpoint.latitude, viewpoint.longitude], 15);
+                markerData.marker.openPopup();
+            }
+        }
+
+        function filterViewpoints(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            const filtered = filter === 'restaurant' ? VIEWPOINTS_DATA.filter(v => v.hasRestaurant) : VIEWPOINTS_DATA;
+            renderViewpointCards(filtered);
+        }
+
+        function updateFilterCounts() {
+            document.getElementById('all-count').textContent = VIEWPOINTS_DATA.length;
+            document.getElementById('restaurant-count').textContent = VIEWPOINTS_DATA.filter(v => v.hasRestaurant).length;
+        }
+
+        function populateDropdowns() {
+            // DSA: Sort by name using QuickSort
+            const sorted = QuickSort.sort([...VIEWPOINTS_DATA], (a, b) => a.name.localeCompare(b.name));
+            const options = sorted.map(v => `<option value="${v.id}">${v.name}</option>`).join('');
+            document.getElementById('from-select').innerHTML = '<option value="">Select starting point</option>' + options;
+            document.getElementById('to-select').innerHTML = '<option value="">Select destination</option>' + options;
+        }
+
+        function swapSelections() {
+            const fromSelect = document.getElementById('from-select');
+            const toSelect = document.getElementById('to-select');
+            const temp = fromSelect.value;
+            fromSelect.value = toSelect.value;
+            toSelect.value = temp;
+            validateRouteInputs();
+        }
+
+        function validateRouteInputs() {
+            const from = document.getElementById('from-select').value;
+            const to = document.getElementById('to-select').value;
+            document.getElementById('calculate-route').disabled = !from || !to || from === to;
+        }
+
+        function switchSection(section) {
+            currentSection = section;
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.section === section);
+            });
+            document.getElementById('map-section').classList.toggle('hidden', section !== 'map');
+            document.getElementById('viewpoints-section').classList.toggle('active', section === 'viewpoints');
+            if (section === 'map') {
+                setTimeout(() => map.invalidateSize(), 100);
+            }
+        }
+
+        function toggleRoutePanel() {
+            document.querySelector('.route-panel').classList.toggle('collapsed');
+            document.getElementById('collapse-route').classList.toggle('collapsed');
+        }
+
+        function showToast(type, title, message) {
+            const container = document.getElementById('toast-container');
+            const iconMap = { success: 'fa-check', error: 'fa-times', warning: 'fa-exclamation', info: 'fa-info' };
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <div class="toast-icon"><i class="fas ${iconMap[type]}"></i></div>
+                <div class="toast-content"><h4>${title}</h4><p>${message}</p></div>
+            `;
+
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
+
+        function initializeEventListeners() {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchSection(btn.dataset.section));
+            });
+
+            const locateBtn = document.getElementById('locate-btn');
+            if (locateBtn) {
+                locateBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    getUserLocation();
+                });
+            }
+
+            const themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleTheme();
+                });
+            }
+
+            document.getElementById('collapse-route').addEventListener('click', toggleRoutePanel);
+            document.getElementById('from-select').addEventListener('change', validateRouteInputs);
+            document.getElementById('to-select').addEventListener('change', validateRouteInputs);
+            document.getElementById('swap-btn').addEventListener('click', swapSelections);
+            document.getElementById('calculate-route').addEventListener('click', calculateRoute);
+            document.getElementById('clear-route').addEventListener('click', clearRoute);
+
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => filterViewpoints(btn.dataset.filter));
+            });
+        }
+    </script>
+</body>
+
+</html>
